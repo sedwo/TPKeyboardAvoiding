@@ -42,17 +42,19 @@ static const int kStateKey;
 - (void)TPKeyboardAvoiding_keyboardWillShow:(NSNotification*)notification {
     TPKeyboardAvoidingState *state = self.keyboardAvoidingState;
     
-    if ( state.keyboardVisible ) {
+    CGRect keyboardRect = [self convertRect:[[[notification userInfo] objectForKey:_UIKeyboardFrameEndUserInfoKey] CGRectValue] fromView:nil];
+
+    if (state.keyboardVisible && CGRectEqualToRect(keyboardRect, state.keyboardRect))
         return;
-    }
-    
+
     UIView *firstResponder = [self TPKeyboardAvoiding_findFirstResponderBeneathView:self];
-    
-    state.keyboardRect = [self convertRect:[[[notification userInfo] objectForKey:_UIKeyboardFrameEndUserInfoKey] CGRectValue] fromView:nil];
+
+    self.contentInset = UIEdgeInsetsMake(0.0, 0.0, keyboardRect.size.height, 0.0);
+    state.keyboardRect = keyboardRect;
     state.keyboardVisible = YES;
     state.priorInset = self.contentInset;
     state.priorScrollIndicatorInsets = self.scrollIndicatorInsets;
-    
+
     if ( [self isKindOfClass:[TPKeyboardAvoidingScrollView class]] ) {
         state.priorContentSize = self.contentSize;
         
